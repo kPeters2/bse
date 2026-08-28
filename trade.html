@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BW Exchange — Trade</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .grid-main { display: grid; grid-template-columns: 1fr; gap: 28px; }
+  @media (min-width: 760px) { .grid-main { grid-template-columns: 2fr 1fr; } }
+  .sym-label { font-size: 12.5px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+  .sym-name { font-size: 15px; color: var(--text-secondary); margin-bottom: 8px; }
+  .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .price-row .price { font-size: 32px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .price-row .chg { font-size: 14px; font-family: 'IBM Plex Mono', monospace; }
+  .live-dot { display: flex; align-items: center; gap: 4px; margin-left: 4px; }
+  .live-dot .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .live-dot span.label { font-size: 10.5px; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .about-grid .k { font-size: 12px; color: var(--text-muted); }
+  .about-grid .v { font-size: 14px; margin-top: 3px; }
+  .order-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px 18px; position: sticky; top: 88px; }
+  .side-toggle { display: flex; margin-bottom: 14px; border-radius: 6px; background: var(--off-white); padding: 3px; }
+  .side-toggle button { flex: 1; padding: 9px 0; border-radius: 5px; border: none; cursor: pointer; font-size: 13.5px; font-weight: 500; text-transform: capitalize; background: transparent; color: var(--text-muted); }
+  .side-toggle button.active { background: var(--white); color: var(--black); box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .amount-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .amount-row .lbl { font-size: 13px; color: var(--text-secondary); }
+  .amount-row button { background: none; border: none; color: var(--flag-blue); font-size: 12.5px; cursor: pointer; }
+  .amount-input { width: 100%; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border); font-size: 20px; font-family: 'IBM Plex Mono', monospace; outline: none; box-sizing: border-box; margin-bottom: 6px; }
+  .amount-input.error-input { border-color: var(--red); }
+  .approx { font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; }
+  .order-summary { border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 14px; }
+  .order-summary .row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--text-secondary); margin-bottom: 6px; }
+  .order-summary .row span.mono { color: var(--black); }
+  .order-error { color: var(--red); font-size: 12.5px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 22 22"><polygon points="11,1 21,11 11,21 1,11" fill="none" stroke="#132C4A" stroke-width="1.5"/><polygon points="11,6 16,11 11,16 6,11" fill="#132C4A"/></svg>
+    BW Exchange
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Portfolio</a>
+    <a href="trade.html" class="active">Markets</a>
+    <a href="listing-request.html">List your company</a>
+  </div>
+  <div class="nav-right">
+    <div class="avatar">KM</div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 22 22"><line x1="3" y1="6" x2="19" y2="6" stroke="#14171A" stroke-width="1.6"/><line x1="3" y1="11" x2="19" y2="11" stroke="#14171A" stroke-width="1.6"/><line x1="3" y1="16" x2="19" y2="16" stroke="#14171A" stroke-width="1.6"/></svg>
+    </button>
+  </div>
+  <div class="nav-dropdown" id="nav-dropdown">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Portfolio</a>
+    <a href="trade.html" class="active">Markets</a>
+    <a href="listing-request.html">List your company</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="grid-main">
+    <div>
+      <div class="sym-label">BIHL</div>
+      <div class="sym-name">Botswana Insurance Holdings</div>
+      <div class="price-row">
+        <div class="price" id="price">P0.00</div>
+        <div class="chg" id="chg"></div>
+        <div class="live-dot"><span class="dot"></span><span class="label">live</span></div>
+      </div>
+      <svg width="100%" height="140" viewBox="0 0 620 140" preserveAspectRatio="none" style="margin-bottom:24px">
+        <path id="chart-path" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <div class="section-title" style="font-size:15px;font-weight:500;margin-bottom:10px">About BIHL</div>
+      <div class="about-grid">
+        <div><div class="k">Sector</div><div class="v">Financial services</div></div>
+        <div><div class="k">Listed since</div><div class="v">2011</div></div>
+        <div><div class="k">Market cap</div><div class="v">P4.2bn</div></div>
+        <div><div class="k">Dividend yield</div><div class="v">3.8%</div></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--text-muted)">Chart and figures are prototype data, not a live BSE feed.</div>
+    </div>
+
+    <div>
+      <div class="order-card">
+        <div class="side-toggle" id="side-toggle">
+          <button data-side="buy" class="active">Buy</button>
+          <button data-side="sell">Sell</button>
+        </div>
+
+        <div class="amount-row">
+          <span class="lbl" id="amount-label">Amount (Pula)</span>
+          <button id="mode-switch">Switch to shares</button>
+        </div>
+        <input class="amount-input" id="amount-input" value="500" />
+        <div class="order-error" id="order-error"></div>
+        <div class="approx" id="approx"></div>
+
+        <div class="order-summary">
+          <div class="row"><span id="summary-label">Available cash</span><span class="mono" id="summary-value"></span></div>
+          <div class="row"><span>Brokerage fee (est.)</span><span class="mono" id="fee-value"></span></div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;text-transform:capitalize" id="review-btn">Review buy order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById("nav-toggle").addEventListener("click", () => {
+  document.getElementById("nav-dropdown").classList.toggle("open");
+});
+
+const BASE_PRICE = 24.85;
+const AVAILABLE_CASH = 4230.5;
+const HELD_SHARES = 40;
+
+function makeHistory(base, len = 30) {
+  const h = [base];
+  for (let i = 1; i < len; i++) h.push(Math.max(0.5, h[i - 1] + (Math.random() - 0.49) * base * 0.01));
+  return h;
+}
+let history = makeHistory(BASE_PRICE);
+let side = "buy";
+let mode = "amount";
+
+function money(n) {
+  return "P" + n.toLocaleString("en-BW", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function pathFromHistory(h, w = 620, hgt = 140) {
+  const min = Math.min(...h), max = Math.max(...h), range = max - min || 1;
+  const step = w / (h.length - 1);
+  return h.map((v, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${(hgt - ((v - min) / range) * hgt * 0.85 - hgt * 0.08).toFixed(1)}`).join(" ");
+}
+
+function renderPrice() {
+  const price = history[history.length - 1];
+  const chg = ((price - history[0]) / history[0]) * 100;
+  const up = chg >= 0;
+  const color = up ? "var(--green)" : "var(--red)";
+  document.getElementById("price").textContent = money(price);
+  const chgEl = document.getElementById("chg");
+  chgEl.textContent = `${up ? "+" : ""}${chg.toFixed(2)}%`;
+  chgEl.style.color = color;
+  document.getElementById("chart-path").setAttribute("d", pathFromHistory(history));
+  document.getElementById("chart-path").setAttribute("stroke", color);
+  renderOrder();
+}
+
+setInterval(() => {
+  const last = history[history.length - 1];
+  const next = Math.max(0.5, last + (Math.random() - 0.49) * last * 0.012);
+  history = [...history.slice(1), next];
+  renderPrice();
+}, 1400);
+
+document.querySelectorAll("#side-toggle button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#side-toggle button").forEach((x) => x.classList.remove("active"));
+    b.classList.add("active");
+    side = b.dataset.side;
+    document.getElementById("review-btn").textContent = "Review " + side + " order";
+    document.getElementById("order-error").textContent = "";
+    renderOrder();
+  });
+});
+
+document.getElementById("mode-switch").addEventListener("click", () => {
+  mode = mode === "amount" ? "shares" : "amount";
+  document.getElementById("amount-label").textContent = mode === "amount" ? "Amount (Pula)" : "Number of shares";
+  document.getElementById("mode-switch").textContent = "Switch to " + (mode === "amount" ? "shares" : "amount");
+  document.getElementById("amount-input").value = "";
+  renderOrder();
+});
+
+document.getElementById("amount-input").addEventListener("input", (e) => {
+  e.target.value = e.target.value.replace(/[^0-9.]/g, "");
+  document.getElementById("order-error").textContent = "";
+  document.getElementById("amount-input").classList.remove("error-input");
+  renderOrder();
+});
+
+function renderOrder() {
+  const price = history[history.length - 1];
+  const numAmount = parseFloat(document.getElementById("amount-input").value) || 0;
+  const shares = mode === "amount" ? numAmount / price : numAmount;
+  const total = mode === "amount" ? numAmount : numAmount * price;
+
+  document.getElementById("approx").textContent = mode === "amount" ? `≈ ${shares.toFixed(2)} shares` : `≈ ${money(total)}`;
+  document.getElementById("summary-label").textContent = side === "buy" ? "Available cash" : "Shares held";
+  document.getElementById("summary-value").textContent = side === "buy" ? money(AVAILABLE_CASH) : `${HELD_SHARES} shares`;
+  document.getElementById("fee-value").textContent = money(total * 0.006);
+}
+
+document.getElementById("review-btn").addEventListener("click", () => {
+  const price = history[history.length - 1];
+  const input = document.getElementById("amount-input");
+  const numAmount = parseFloat(input.value) || 0;
+  const shares = mode === "amount" ? numAmount / price : numAmount;
+  const total = mode === "amount" ? numAmount : numAmount * price;
+  const errEl = document.getElementById("order-error");
+
+  if (numAmount <= 0) { errEl.textContent = "Enter an amount greater than zero"; input.classList.add("error-input"); return; }
+  if (side === "buy" && total > AVAILABLE_CASH) { errEl.textContent = `That's more than your available cash (${money(AVAILABLE_CASH)})`; input.classList.add("error-input"); return; }
+  if (side === "sell" && shares > HELD_SHARES) { errEl.textContent = `You only hold ${HELD_SHARES} shares of BIHL`; input.classList.add("error-input"); return; }
+
+  errEl.textContent = "";
+  alert(`Order preview — this is a prototype, no real order placed.\n\n${side.toUpperCase()} ${shares.toFixed(2)} BIHL for ${money(total)}`);
+});
+
+renderPrice();
+</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BW Exchange — Sign up</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .stepper { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+  .step-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: 'IBM Plex Mono', monospace; background: var(--off-white); color: var(--text-muted); border: 1px solid var(--border); }
+  .step-dot.done, .step-dot.current { background: var(--navy); color: var(--white); border: none; }
+  .step-label { font-size: 13px; color: var(--text-muted); }
+  .step-label.current { color: var(--black); font-weight: 500; }
+  .step-line { width: 24px; height: 1px; background: var(--border); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  h2 { font-size: 24px; font-weight: 700; margin: 0 0 6px; }
+  .subtext { color: var(--text-secondary); font-size: 14.5px; margin: 0 0 20px; line-height: 1.5; }
+  .seg { display: flex; gap: 8px; }
+  .seg button { flex: 1; padding: 10px 8px; border-radius: 5px; border: 1px solid var(--border); background: var(--white); color: var(--black); font-size: 13.5px; cursor: pointer; }
+  .seg button.selected { border-color: var(--navy); background: var(--off-white); }
+  .review-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .review-row:last-child { border-bottom: none; }
+  .review-row .k { font-size: 13.5px; color: var(--text-secondary); }
+  .review-row .v { font-size: 13.5px; font-weight: 500; text-align: right; }
+  .review-box { background: var(--off-white); border-radius: 8px; border: 1px solid var(--border); padding: 6px 18px; }
+  .disclaimer { font-size: 12.5px; color: var(--text-muted); margin-top: 16px; line-height: 1.6; }
+  .nav-buttons { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 22 22"><polygon points="11,1 21,11 11,21 1,11" fill="none" stroke="#132C4A" stroke-width="1.5"/><polygon points="11,6 16,11 11,16 6,11" fill="#132C4A"/></svg>
+    BW Exchange
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Portfolio</a>
+    <a href="trade.html">Markets</a>
+    <a href="listing-request.html">List your company</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 22 22"><line x1="3" y1="6" x2="19" y2="6" stroke="#14171A" stroke-width="1.6"/><line x1="3" y1="11" x2="19" y2="11" stroke="#14171A" stroke-width="1.6"/><line x1="3" y1="16" x2="19" y2="16" stroke="#14171A" stroke-width="1.6"/></svg>
+    </button>
+  </div>
+  <div class="nav-dropdown" id="nav-dropdown">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html">Portfolio</a>
+    <a href="trade.html">Markets</a>
+    <a href="listing-request.html">List your company</a>
+  </div>
+</nav>
+
+<div class="container-narrow">
+  <div class="stepper" id="stepper"></div>
+
+  <div class="panel active" data-panel="0">
+    <h2>What's your number?</h2>
+    <p class="subtext">We'll text you a code to confirm it's really you.</p>
+    <div class="field">
+      <label>Mobile number</label>
+      <div class="phone-input"><span>+267</span><input id="f-phone" placeholder="7X XXX XXX" /></div>
+      <div class="error" id="e-phone"></div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="1">
+    <h2>Confirm who you are</h2>
+    <p class="subtext">This is required by BSE and NBFIRA before any account can trade.</p>
+    <div class="field">
+      <label>Full name, as on your Omang</label>
+      <input id="f-name" placeholder="Kabelo T. Molefe" />
+      <div class="error" id="e-name"></div>
+    </div>
+    <div class="field">
+      <label>Omang number</label>
+      <input id="f-omang" placeholder="123456789" />
+      <div class="error" id="e-omang"></div>
+    </div>
+    <div class="field">
+      <label>Date of birth</label>
+      <input id="f-dob" type="date" />
+      <div class="error" id="e-dob"></div>
+    </div>
+    <div class="field">
+      <label>Photo of your Omang (front)</label>
+      <div class="upload-slot">Tap to upload a photo or scan</div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="2">
+    <h2>A bit about your investing</h2>
+    <p class="subtext">This helps us show you the right things — it's not a test.</p>
+    <div class="field">
+      <label>Have you invested in shares before?</label>
+      <div class="seg" id="f-experience">
+        <button data-val="First time">First time</button>
+        <button data-val="A little">A little</button>
+        <button data-val="Experienced">Experienced</button>
+      </div>
+      <div class="error" id="e-experience"></div>
+    </div>
+    <div class="field">
+      <label>What are you investing towards?</label>
+      <input id="f-goal" placeholder="Long-term savings, a house, a business..." />
+      <div class="error" id="e-goal"></div>
+    </div>
+    <div class="field">
+      <label>Monthly income range (optional)</label>
+      <select id="f-income">
+        <option value="">Prefer not to say</option>
+        <option>Under P5,000</option>
+        <option>P5,000 – P15,000</option>
+        <option>P15,000 – P40,000</option>
+        <option>Over P40,000</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="3">
+    <h2>Review and confirm</h2>
+    <p class="subtext">Check this looks right — you can still go back and fix anything.</p>
+    <div class="review-box" id="review-box"></div>
+    <div class="disclaimer">By continuing you agree this information is accurate and can be used to open a trading account under your name, in line with BSE and NBFIRA requirements.</div>
+  </div>
+
+  <div class="nav-buttons">
+    <button class="btn btn-ghost" id="btn-back" style="visibility:hidden">Back</button>
+    <button class="btn btn-primary" id="btn-next">Continue</button>
+  </div>
+</div>
+
+<script>
+document.getElementById("nav-toggle").addEventListener("click", () => {
+  document.getElementById("nav-dropdown").classList.toggle("open");
+});
+
+const STEPS = ["Phone", "Identity", "Profile", "Review"];
+let step = 0;
+const form = { phone: "", name: "", omang: "", dob: "", experience: "", goal: "", income: "" };
+
+function renderStepper() {
+  const el = document.getElementById("stepper");
+  el.innerHTML = STEPS.map((s, i) => {
+    const dotClass = i < step ? "done" : i === step ? "current" : "";
+    const labelClass = i === step ? "current" : "";
+    const dot = `<div class="step-dot ${dotClass}">${i < step ? "✓" : i + 1}</div>`;
+    const label = `<span class="step-label ${labelClass}">${s}</span>`;
+    const line = i < STEPS.length - 1 ? `<div class="step-line"></div>` : "";
+    return `<div style="display:flex;align-items:center;gap:8px">${dot}${label}</div>${line}`;
+  }).join("");
+}
+
+document.querySelectorAll("#f-experience button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#f-experience button").forEach((x) => x.classList.remove("selected"));
+    b.classList.add("selected");
+    form.experience = b.dataset.val;
+  });
+});
+
+function clearErrors() {
+  document.querySelectorAll(".error").forEach((e) => (e.textContent = ""));
+  document.querySelectorAll("input, select").forEach((e) => e.classList.remove("error-input"));
+}
+
+function setError(id, msg) {
+  document.getElementById("e-" + id).textContent = msg;
+  const input = document.getElementById("f-" + id);
+  if (input) input.classList.add("error-input");
+}
+
+function validate() {
+  clearErrors();
+  let ok = true;
+  if (step === 0) {
+    form.phone = document.getElementById("f-phone").value.trim();
+    if (!/^\d{8}$/.test(form.phone.replace(/\s/g, ""))) { setError("phone", "Enter a valid 8-digit Botswana number"); ok = false; }
+  }
+  if (step === 1) {
+    form.name = document.getElementById("f-name").value.trim();
+    form.omang = document.getElementById("f-omang").value.trim();
+    form.dob = document.getElementById("f-dob").value;
+    if (!form.name) { setError("name", "Enter your full name as it appears on your Omang"); ok = false; }
+    if (!/^\d{9}$/.test(form.omang)) { setError("omang", "Omang number should be 9 digits"); ok = false; }
+    if (!form.dob) { setError("dob", "Enter your date of birth"); ok = false; }
+  }
+  if (step === 2) {
+    form.goal = document.getElementById("f-goal").value.trim();
+    form.income = document.getElementById("f-income").value;
+    if (!form.experience) { setError("experience", "Choose the option closest to your experience"); ok = false; }
+    if (!form.goal) { setError("goal", "Tell us what you're investing towards"); ok = false; }
+  }
+  return ok;
+}
+
+function renderReview() {
+  const rows = [
+    ["Mobile number", "+267 " + (form.phone || "—")],
+    ["Full name", form.name || "—"],
+    ["Omang number", form.omang || "—"],
+    ["Date of birth", form.dob || "—"],
+    ["Investing experience", form.experience || "—"],
+    ["Goal", form.goal || "—"],
+  ];
+  document.getElementById("review-box").innerHTML = rows.map(([k, v]) => `<div class="review-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+}
+
+function showStep() {
+  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.dataset.panel == step));
+  document.getElementById("btn-back").style.visibility = step > 0 ? "visible" : "hidden";
+  document.getElementById("btn-next").textContent = step === STEPS.length - 1 ? "Create account" : "Continue";
+  if (step === STEPS.length - 1) renderReview();
+  renderStepper();
+}
+
+document.getElementById("btn-next").addEventListener("click", () => {
+  if (step < STEPS.length - 1) {
+    if (!validate()) return;
+    step++;
+    showStep();
+  } else {
+    alert("Account created — this is a prototype, no real submission yet.");
+  }
+});
+document.getElementById("btn-back").addEventListener("click", () => {
+  clearErrors();
+  step = Math.max(0, step - 1);
+  showStep();
+});
+
+showStep();
+</script>
+</body>
+</html>

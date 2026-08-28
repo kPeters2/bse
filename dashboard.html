@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BW Exchange — Portfolio</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .greeting { font-size: 13px; color: var(--text-secondary); margin-bottom: 3px; }
+  .total-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+  .total-value { font-size: 34px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .total-gain { font-size: 15px; font-family: 'IBM Plex Mono', monospace; }
+  .range-pills { display: flex; gap: 8px; margin-bottom: 20px; }
+  .range-pills button { padding: 6px 14px; border-radius: 5px; border: 1px solid var(--border); background: var(--white); font-size: 12.5px; cursor: pointer; }
+  .range-pills button.active { border-color: var(--navy); background: var(--off-white); }
+  .metrics { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .metric-card { background: var(--off-white); border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 160px; }
+  .metric-card .label { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 6px; }
+  .metric-card .value { font-size: 22px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+  .metric-card .sub { font-size: 12.5px; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); }
+  .grid-main { display: grid; grid-template-columns: 1fr; gap: 24px; }
+  @media (min-width: 760px) { .grid-main { grid-template-columns: 2fr 1fr; } }
+  .section-title { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+  .holdings-list { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .holding-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .holding-row:last-child { border-bottom: none; }
+  .holding-row .sym { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .holding-row .desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .holding-row .value { font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-align: right; }
+  .holding-row .pct { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-align: right; }
+  .alloc-legend { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 12.5px; }
+  .alloc-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 22 22"><polygon points="11,1 21,11 11,21 1,11" fill="none" stroke="#132C4A" stroke-width="1.5"/><polygon points="11,6 16,11 11,16 6,11" fill="#132C4A"/></svg>
+    BW Exchange
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html" class="active">Portfolio</a>
+    <a href="trade.html">Markets</a>
+    <a href="listing-request.html">List your company</a>
+  </div>
+  <div class="nav-right">
+    <div class="avatar">KM</div>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 22 22"><line x1="3" y1="6" x2="19" y2="6" stroke="#14171A" stroke-width="1.6"/><line x1="3" y1="11" x2="19" y2="11" stroke="#14171A" stroke-width="1.6"/><line x1="3" y1="16" x2="19" y2="16" stroke="#14171A" stroke-width="1.6"/></svg>
+    </button>
+  </div>
+  <div class="nav-dropdown" id="nav-dropdown">
+    <a href="index.html">Home</a>
+    <a href="dashboard.html" class="active">Portfolio</a>
+    <a href="trade.html">Markets</a>
+    <a href="listing-request.html">List your company</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="greeting">Good afternoon, Kabelo</div>
+  <div class="total-row">
+    <div class="total-value" id="total-value">P0.00</div>
+    <div class="total-gain" id="total-gain"></div>
+  </div>
+
+  <div class="range-pills" id="range-pills">
+    <button data-r="1W">1W</button>
+    <button data-r="1M" class="active">1M</button>
+    <button data-r="3M">3M</button>
+    <button data-r="1Y">1Y</button>
+    <button data-r="ALL">ALL</button>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-card"><div class="label">Total invested</div><div class="value" id="m-invested"></div></div>
+    <div class="metric-card"><div class="label">Total gain</div><div class="value" id="m-gain"></div><div class="sub" id="m-gain-pct"></div></div>
+    <div class="metric-card"><div class="label">Dividends this year</div><div class="value">P312.40</div><div class="sub">Next: BIHL, 14 Sep</div></div>
+  </div>
+
+  <div class="grid-main">
+    <div>
+      <div class="section-title">Your holdings</div>
+      <div class="holdings-list" id="holdings-list"></div>
+    </div>
+    <div>
+      <div class="section-title">Allocation</div>
+      <div style="display:flex;justify-content:center;margin-bottom:10px" id="donut-wrap"></div>
+      <div id="alloc-legend"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById("nav-toggle").addEventListener("click", () => {
+  document.getElementById("nav-dropdown").classList.toggle("open");
+});
+
+const HOLDINGS = [
+  { sym: "BIHL", name: "Botswana Insurance Holdings", shares: 40, avg: 21.1, price: 24.85 },
+  { sym: "LETSHEGO", name: "Letshego Holdings", shares: 620, avg: 1.82, price: 2.11 },
+  { sym: "FNBB", name: "First National Bank Botswana", shares: 210, avg: 4.6, price: 4.35 },
+  { sym: "SEFALANA", name: "Sefalana Holdings", shares: 55, avg: 9.9, price: 9.42 },
+  { sym: "DIAMOND IDX", name: "Diamond-linked note", shares: 8, avg: 102.0, price: 118.4 },
+];
+const ALLOC_COLORS = ["#132C4A", "#5B9BD5", "#9DBEDD", "#C7D8EA", "#0C1F35"];
+
+function money(n) {
+  return "P" + n.toLocaleString("en-BW", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+const rows = HOLDINGS.map((h) => {
+  const value = h.shares * h.price;
+  const cost = h.shares * h.avg;
+  const gain = value - cost;
+  const gainPct = (gain / cost) * 100;
+  return { ...h, value, cost, gain, gainPct };
+});
+const totalValue = rows.reduce((a, r) => a + r.value, 0);
+const totalCost = rows.reduce((a, r) => a + r.cost, 0);
+const totalGain = totalValue - totalCost;
+const totalGainPct = (totalGain / totalCost) * 100;
+
+document.getElementById("total-value").textContent = money(totalValue);
+const gainEl = document.getElementById("total-gain");
+gainEl.textContent = `${totalGain >= 0 ? "+" : ""}${money(totalGain)} (${totalGainPct.toFixed(1)}%)`;
+gainEl.style.color = totalGain >= 0 ? "var(--green)" : "var(--red)";
+
+document.getElementById("m-invested").textContent = money(totalCost);
+document.getElementById("m-gain").textContent = (totalGain >= 0 ? "+" : "") + money(totalGain);
+const gainPctEl = document.getElementById("m-gain-pct");
+gainPctEl.textContent = totalGainPct.toFixed(1) + "% overall";
+gainPctEl.style.color = totalGain >= 0 ? "var(--green)" : "var(--red)";
+
+document.getElementById("holdings-list").innerHTML = rows.map((r) => {
+  const color = r.gain >= 0 ? "var(--green)" : "var(--red)";
+  return `<div class="holding-row">
+    <div><div class="sym">${r.sym}</div><div class="desc">${r.shares.toLocaleString()} shares @ avg P${r.avg.toFixed(2)}</div></div>
+    <div><div class="value">${money(r.value)}</div><div class="pct" style="color:${color}">${r.gain >= 0 ? "+" : ""}${r.gainPct.toFixed(1)}%</div></div>
+  </div>`;
+}).join("");
+
+// Donut chart
+const r = 46, c = 2 * Math.PI * r;
+let acc = 0;
+const segments = rows.map((row, i) => {
+  const frac = row.value / totalValue;
+  const dash = frac * c;
+  const circle = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${ALLOC_COLORS[i % ALLOC_COLORS.length]}" stroke-width="14" stroke-dasharray="${dash} ${c - dash}" stroke-dashoffset="${-acc}" />`;
+  acc += dash;
+  return circle;
+}).join("");
+document.getElementById("donut-wrap").innerHTML = `<svg width="120" height="120" viewBox="0 0 120 120"><g transform="rotate(-90 60 60)">${segments}</g></svg>`;
+
+document.getElementById("alloc-legend").innerHTML = rows.map((r, i) => `
+  <div class="alloc-legend">
+    <span><span class="alloc-dot" style="background:${ALLOC_COLORS[i % ALLOC_COLORS.length]}"></span>${r.sym}</span>
+    <span class="mono">${((r.value / totalValue) * 100).toFixed(0)}%</span>
+  </div>`).join("");
+
+document.querySelectorAll("#range-pills button").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#range-pills button").forEach((x) => x.classList.remove("active"));
+    b.classList.add("active");
+  });
+});
+</script>
+</body>
+</html>
